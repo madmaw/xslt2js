@@ -2,7 +2,7 @@
                 xmlns:b="urn:xmlns:25hoursaday-com:bookstore">
 
     <xsl:template match="b:bookstore">
-        <book-titles>
+        <book-titles a="b">
             <xsl:apply-templates select="b:book/b:title"/>
         </book-titles>
     </xsl:template>
