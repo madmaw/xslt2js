@@ -8,6 +8,7 @@
 
     <modules>
         <module>xsltc</module>
+        <module>support</module>
     </modules>
 
 </project>

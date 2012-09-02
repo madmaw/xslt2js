@@ -1,6 +1,5 @@
 <xsl:stylesheet version="1.1" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
-    <xsl:param name="indent-spacing">&#160;&#160;</xsl:param>
 
     <xsl:template name="line-prefix">
         <xsl:param name="indent"/>

@@ -1,122 +1,29 @@
 <xsl:stylesheet version="1.1" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
+    <xsl:include href="expression/expression2js.xslt"/>
+    <xsl:include href="expression/text2tokens.xslt"/>
+    <xsl:include href="expression/tokens2tree.xslt"/>
+    <xsl:include href="expression/tree2js.xslt"/>
 
-    <xsl:import href="expression/expression2js.xslt"/>
-    <xsl:import href="util.xslt"/>
+    <xsl:include href="util.xslt"/>
 
+    <xsl:include href="xsl/stylesheet2js.xslt"/>
+    <xsl:include href="xsl/template2js.xslt"/>
+    <xsl:include href="xsl/copy-of2js.xslt"/>
+    <xsl:include href="xsl/apply-templates2js.xslt"/>
 
     <xsl:output method="text"/>
     <xsl:preserve-space elements="*"/>
 
     <xsl:param name="top-level-function-name"/>
     <xsl:param name="tab">&#160;&#160;</xsl:param>
+    <xsl:param name="indent-spacing">&#160;&#160;</xsl:param>
 
     <xsl:template match="xsl:stylesheet">
-        <xsl:param name="indent"><xsl:text>
-</xsl:text></xsl:param>
-        <xsl:variable name="next-indent" select="concat($indent, $tab)"/>
-
-        <xsl:apply-templates select="." mode="comment">
-            <xsl:with-param name="indent" select="$indent"/>
-        </xsl:apply-templates>
-
-        <!-- assume we have a stylesheet element -->
-        <xsl:value-of select="$indent"/>
-        <xsl:if test="$top-level-function-name">
-            <xsl:value-of select="$top-level-function-name"/><xsl:text> = </xsl:text>
-        </xsl:if>
-        <xsl:text>(function(xslt2js) {</xsl:text>
-        <xsl:value-of select="$next-indent"/><xsl:text>var stylesheet = {};</xsl:text>
-        <xsl:value-of select="$next-indent"/><xsl:text>var defaultTemplates = [];</xsl:text>
-        <xsl:value-of select="$next-indent"/><xsl:text>var modalTemplates = {};</xsl:text>
-        <xsl:value-of select="$next-indent"/><xsl:text>var namedTemplates = {};</xsl:text>
-        <xsl:value-of select="$next-indent"/><xsl:text>stylesheet.defaultTemplates = defaultTemplates;</xsl:text>
-        <xsl:value-of select="$next-indent"/><xsl:text>stylesheet.modalTemplates = modalTemplates;</xsl:text>
-        <xsl:value-of select="$next-indent"/><xsl:text>stylesheet.namedTemplates = namedTemplates;</xsl:text>
-        <xsl:for-each select="xsl:template">
-            <xsl:choose>
-                <xsl:when test="@name">
-                    <xsl:value-of select="$next-indent"/><xsl:text>namedTemplates["</xsl:text><xsl:value-of select="@name"/><xsl:text>"] = </xsl:text>
-                </xsl:when>
-                <xsl:when test="@mode">
-                    <xsl:value-of select="$next-indent"/><xsl:text>if(!modalTemplates["</xsl:text><xsl:value-of select="@name"/><xsl:text>"]){</xsl:text>
-                    <xsl:value-of select="$next-indent"/><xsl:text>  modalTemplates["</xsl:text><xsl:value-of select="@name"/><xsl:text>"] = [];</xsl:text>
-                    <xsl:value-of select="$next-indent"/><xsl:text>}</xsl:text>
-                    <xsl:value-of select="$next-indent"/><xsl:text>modalTemplates["</xsl:text><xsl:value-of select="@name"/><xsl:text>"].push(</xsl:text>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:value-of select="$next-indent"/><xsl:text>defaultTemplates.push(</xsl:text>
-                </xsl:otherwise>
-            </xsl:choose>
-            <xsl:apply-templates select=".">
-                <xsl:with-param name="indent" select="$next-indent"/>
-            </xsl:apply-templates>
-            <xsl:if test="string-length(@mode) > 0 or string-length(@name) = 0">
-                <xsl:text>);</xsl:text>
-            </xsl:if>
-        </xsl:for-each>
-        <xsl:value-of select="$next-indent"/><xsl:text>return stylesheet;</xsl:text>
-        <xsl:value-of select="$indent"/><xsl:text>})();</xsl:text>
+        <xsl:apply-templates select="." mode="xslt2js"/>
     </xsl:template>
 
-    <xsl:template match="xsl:template">
-        <xsl:param name="indent"/>
-        <xsl:param name="resultNode">resultNode</xsl:param>
-        <xsl:variable name="next-indent" select="concat($indent, $tab)"/>
-        <xsl:variable name="next-next-indent" select="concat($next-indent, $tab)"/>
-
-        <xsl:text>{</xsl:text>
-
-        <xsl:apply-templates select="." mode="comment">
-            <xsl:with-param name="indent" select="$next-indent"/>
-        </xsl:apply-templates>
-
-        <!-- add the matcher -->
-        <xsl:if test="@match">
-            <xsl:value-of select="$next-indent"/><xsl:text>match:function(node, params){ </xsl:text>
-
-            <xsl:value-of select="$next-next-indent"/>
-            <xsl:text>return </xsl:text>
-            <xsl:apply-templates select="@match" mode="expression2js">
-                <xsl:with-param name="nodeVariableName">node</xsl:with-param>
-                <xsl:with-param name="valuesVariableName">params</xsl:with-param>
-            </xsl:apply-templates>
-            <xsl:text>;</xsl:text>
-
-            <xsl:value-of select="$next-indent"/><xsl:text>},</xsl:text>
-        </xsl:if>
-        <xsl:if test="@priority">
-            <xsl:value-of select="$next-indent"/><xsl:text>priority:</xsl:text><xsl:value-of select="@priority"/><xsl:text>,</xsl:text>
-        </xsl:if>
-        <xsl:value-of select="$next-indent"/><xsl:text>transformation:function(node, </xsl:text><xsl:value-of select="$resultNode"/><xsl:text>, params){</xsl:text>
-        <xsl:value-of select="$next-next-indent"/><xsl:text>var values = xslt2js.createScope(params);</xsl:text>
-        <xsl:apply-templates select="*" mode="code">
-            <xsl:with-param name="indent" select="$next-next-indent"/>
-            <xsl:with-param name="resultNode" select="$resultNode"/>
-        </xsl:apply-templates>
-        <xsl:value-of select="$next-indent"/><xsl:text>}</xsl:text>
-
-        <xsl:value-of select="$indent"/><xsl:text>}</xsl:text>
-    </xsl:template>
-
-    <xsl:template match="xsl:copy-of" mode="code" priority="2">
-        <xsl:param name="indent"/>
-        <xsl:param name="resultNode"/>
-
-        <xsl:apply-templates select="." mode="comment">
-            <xsl:with-param name="indent" select="$indent"/>
-        </xsl:apply-templates>
-
-        <!-- TODO almost certainly should treat as a list -->
-        <xsl:value-of select="$indent"/><xsl:text>xslt2js.carefulAppendNodes(</xsl:text><xsl:value-of select="$resultNode"/><xsl:text>, xslt2js.carefulCloneNodes(</xsl:text>
-        <xsl:apply-templates select="@select" mode="expression2js">
-
-        </xsl:apply-templates>
-        <xsl:text>));</xsl:text>
-
-    </xsl:template>
-
-    <xsl:template match="*" mode="code" priority="1">
+    <xsl:template match="*" mode="xslt2js" priority="0">
         <xsl:param name="indent"/>
         <xsl:param name="resultNode"/>
 
@@ -167,7 +74,7 @@
                 <xsl:text>xslt2js.appendNode(</xsl:text><xsl:value-of select="$resultNode"/><xsl:text>, </xsl:text><xsl:value-of select="$childNode"/><xsl:text>);</xsl:text>
 
                 <!-- add in the children -->
-                <xsl:apply-templates select="*" mode="code">
+                <xsl:apply-templates select="*" mode="xslt2js">
                     <xsl:with-param name="indent" select="$indent"/>
                     <xsl:with-param name="resultNode" select="$childNode"/>
                 </xsl:apply-templates>

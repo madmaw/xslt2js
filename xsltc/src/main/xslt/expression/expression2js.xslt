@@ -1,7 +1,5 @@
 <xsl:stylesheet version="1.1" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exslt="http://exslt.org/common" exclude-result-prefixes="exslt">
 
-    <xsl:import href="../util.xslt"/>
-    <xsl:import href="expression-tokenize.xslt"/>
 
     <xsl:template match="@*" mode="expression2js">
         <xsl:param name="nodeVariableName">node</xsl:param>
@@ -11,7 +9,7 @@
         </xsl:message>
         <xsl:variable name="tokensFragment">
             <tokens>
-                <xsl:apply-templates select="." mode="expression-tokenize"/>
+                <xsl:apply-templates select="." mode="expression-text-to-tokens"/>
             </tokens>
         </xsl:variable>
         <xsl:variable name="tokensNodeSet" select="exslt:node-set($tokensFragment)"/>
