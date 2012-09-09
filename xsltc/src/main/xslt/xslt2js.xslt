@@ -1,16 +1,14 @@
 <xsl:stylesheet version="1.1" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
     <xsl:include href="expression/expression2js.xslt"/>
-    <xsl:include href="expression/text2tokens.xslt"/>
-    <xsl:include href="expression/tokens2tree.xslt"/>
-    <xsl:include href="expression/tree2js.xslt"/>
 
     <xsl:include href="util.xslt"/>
 
+    <xsl:include href="xsl/apply-templates2js.xslt"/>
+    <xsl:include href="xsl/copy-of2js.xslt"/>
     <xsl:include href="xsl/stylesheet2js.xslt"/>
     <xsl:include href="xsl/template2js.xslt"/>
-    <xsl:include href="xsl/copy-of2js.xslt"/>
-    <xsl:include href="xsl/apply-templates2js.xslt"/>
+    <xsl:include href="xsl/value-of2js.xslt"/>
 
     <xsl:output method="text"/>
     <xsl:preserve-space elements="*"/>

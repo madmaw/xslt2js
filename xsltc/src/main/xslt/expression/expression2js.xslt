@@ -1,12 +1,18 @@
 <xsl:stylesheet version="1.1" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exslt="http://exslt.org/common" exclude-result-prefixes="exslt">
 
+    <xsl:include href="text2tokens.xslt"/>
+    <xsl:include href="tokens2lists.xslt"/>
+    <xsl:include href="lists2tree.xslt"/>
+    <xsl:include href="tree2js.xslt"/>
 
     <xsl:template match="@*" mode="expression2js">
         <xsl:param name="nodeVariableName">node</xsl:param>
         <xsl:param name="valuesVariableName">values</xsl:param>
+
         <xsl:message>
             EXPRESSION: <xsl:value-of select="."/>
         </xsl:message>
+
         <xsl:variable name="tokensFragment">
             <tokens>
                 <xsl:apply-templates select="." mode="expression-text-to-tokens"/>
@@ -16,10 +22,18 @@
         <xsl:message>
             TOKENS: <xsl:copy-of select="$tokensNodeSet"/>
         </xsl:message>
+
+        <xsl:variable name="lists">
+            <list>
+                <xsl:apply-templates select="$tokensNodeSet/tokens/*[@index = 1]" mode="expression-tokens-to-lists"/>
+            </list>
+        </xsl:variable>
+        <xsl:message>
+            LIST: <xsl:copy-of select="exslt:node-set($lists)"/>
+        </xsl:message>
+
         <xsl:variable name="treeFragment">
-            <tree>
-                <xsl:apply-templates select="$tokensNodeSet" mode="expression-tokens-to-tree"/>
-            </tree>
+            <xsl:apply-templates select="exslt:node-set($lists)" mode="expression-lists-to-tree"/>
         </xsl:variable>
         <xsl:message>
             TREE: <xsl:copy-of select="$treeFragment"/>
