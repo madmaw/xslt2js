@@ -12,23 +12,23 @@
 
         <xsl:choose>
             <xsl:when test="$to-index > $from-index">
-                <xsl:variable name="highest-precedence-index">
-                    <xsl:apply-templates select="." mode="expression-lists-to-tree-get-highest-precedence-operation-index">
+                <xsl:variable name="lowest-precedence-index">
+                    <xsl:apply-templates select="." mode="expression-lists-to-tree-get-lowest-precedence-operation-index">
                         <xsl:with-param name="index" select="$from-index"/>
                         <xsl:with-param name="to-index" select="$to-index"/>
                     </xsl:apply-templates>
                 </xsl:variable>
-                <xsl:variable name="highest-precedence-element" select="*[position() = $highest-precedence-index]"/>
+                <xsl:variable name="highest-precedence-element" select="*[position() = $lowest-precedence-index]"/>
                 <xsl:element name="{name($highest-precedence-element)}">
                     <xsl:attribute name="index">
                         <xsl:value-of select="$highest-precedence-element/@index"/>
                     </xsl:attribute>
                     <xsl:apply-templates select="." mode="expression-lists-to-tree">
                         <xsl:with-param name="from-index" select="$from-index"/>
-                        <xsl:with-param name="to-index" select="$highest-precedence-index - 1"/>
+                        <xsl:with-param name="to-index" select="$lowest-precedence-index - 1"/>
                     </xsl:apply-templates>
                     <xsl:apply-templates select="." mode="expression-lists-to-tree">
-                        <xsl:with-param name="from-index" select="$highest-precedence-index + 1"/>
+                        <xsl:with-param name="from-index" select="$lowest-precedence-index + 1"/>
                         <xsl:with-param name="to-index" select="$to-index"/>
                     </xsl:apply-templates>
                 </xsl:element>
@@ -42,63 +42,67 @@
         </xsl:choose>
     </xsl:template>
 
-    <xsl:template match="list" mode="expression-lists-to-tree-get-highest-precedence-operation-index">
+    <xsl:template match="list" mode="expression-lists-to-tree-get-lowest-precedence-operation-index">
         <xsl:param name="index"/>
         <xsl:param name="to-index"/>
-        <xsl:param name="max-precedence-so-far" select="-1"/>
-        <xsl:param name="max-index-so-far"/>
+        <xsl:param name="min-precedence-so-far" select="10000"/>
+        <xsl:param name="min-index-so-far"/>
         <xsl:choose>
             <xsl:when test="$to-index >= $index">
                 <xsl:variable name="precedence">
                     <xsl:apply-templates select="*[$index]" mode="expression-lists-to-tree-get-precedence"/>
                 </xsl:variable>
-                <xsl:variable name="max-precedence">
+                <xsl:variable name="min-precedence">
                     <xsl:choose>
-                        <xsl:when test="$max-precedence-so-far > $precedence">
-                            <xsl:value-of select="$max-precedence-so-far"/>
+                        <xsl:when test="$precedence >= $min-precedence-so-far">
+                            <xsl:value-of select="$min-precedence-so-far"/>
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:value-of select="$precedence"/>
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:variable>
-                <xsl:variable name="max-index">
+                <xsl:variable name="min-index">
                     <xsl:choose>
-                        <xsl:when test="$max-precedence-so-far > $precedence">
-                            <xsl:value-of select="$max-index-so-far"/>
+                        <xsl:when test="$precedence >= $min-precedence-so-far">
+                            <xsl:value-of select="$min-index-so-far"/>
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:value-of select="$index"/>
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:variable>
-                <xsl:apply-templates select="." mode="expression-lists-to-tree-get-highest-precedence-operation-index">
+                <xsl:apply-templates select="." mode="expression-lists-to-tree-get-lowest-precedence-operation-index">
                     <xsl:with-param name="index" select="$index + 1"/>
                     <xsl:with-param name="to-index" select="$to-index"/>
-                    <xsl:with-param name="max-index-so-far" select="$max-index"/>
-                    <xsl:with-param name="max-precedence-so-far" select="$max-precedence"/>
+                    <xsl:with-param name="min-index-so-far" select="$min-index"/>
+                    <xsl:with-param name="min-precedence-so-far" select="$min-precedence"/>
                 </xsl:apply-templates>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:value-of select="$max-index-so-far"/>
+                <xsl:value-of select="$min-index-so-far"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
 
     <xsl:template match="*" mode="expression-lists-to-tree-get-precedence" priority="1">
-        <xsl:text>0</xsl:text>
+        <xsl:text>10000</xsl:text>
     </xsl:template>
 
-    <xsl:template match="add|subtract" mode="expression-lists-to-tree-get-precedence" priority="2">
+    <xsl:template match="or" mode="expression-lists-to-tree-get-precedence" priority="2">
         <xsl:text>1</xsl:text>
     </xsl:template>
 
-    <xsl:template match="multiply" mode="expression-lists-to-tree-get-precedence" priority="2">
+    <xsl:template match="and" mode="expression-lists-to-tree-get-precedence" priority="2">
         <xsl:text>2</xsl:text>
     </xsl:template>
 
-    <xsl:template match="divide" mode="expression-lists-to-tree-get-precedence" priority="2">
-        <xsl:text>3</xsl:text>
+    <xsl:template match="add|subtract" mode="expression-lists-to-tree-get-precedence" priority="2">
+        <xsl:text>5</xsl:text>
+    </xsl:template>
+
+    <xsl:template match="multiply|divide" mode="expression-lists-to-tree-get-precedence" priority="2">
+        <xsl:text>6</xsl:text>
     </xsl:template>
 
     <xsl:template match="word|variable|string-literal|number-literal" mode="expression-lists-to-tree-value">
