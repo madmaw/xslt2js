@@ -2,10 +2,21 @@
 
     <xsl:import href="../util.xslt"/>
 
-    <xsl:template match="tree" mode="expression-tree-to-javascript">
-        <xsl:param name="nodeVariableName">node</xsl:param>
-        <xsl:param name="valuesVariableName">values</xsl:param>
-        <xsl:value-of select="$nodeVariableName"/>
+    <xsl:template match="add" mode="expression-tree-to-javascript">
+        <xsl:text>(</xsl:text>
+        <xsl:for-each select="*">
+            <xsl:if test="position() > 1">
+                <xsl:text> + </xsl:text>
+            </xsl:if>
+            <xsl:apply-templates select="." mode="expression-tree-to-javascript">
+
+            </xsl:apply-templates>
+        </xsl:for-each>
+        <xsl:text>)</xsl:text>
+    </xsl:template>
+
+    <xsl:template match="number-literal" mode="expression-tree-to-javascript">
+        <xsl:value-of select="."/>
     </xsl:template>
 
 </xsl:stylesheet>
