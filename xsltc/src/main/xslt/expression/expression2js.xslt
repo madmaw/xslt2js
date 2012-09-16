@@ -26,6 +26,8 @@
         <xsl:variable name="lists">
             <list>
                 <xsl:apply-templates select="$tokensNodeSet/tokens/*[@index = 1]" mode="expression-tokens-to-lists"/>
+                <!-- add in extra list-end for consistency -->
+                <list-end/>
             </list>
         </xsl:variable>
         <xsl:message>
