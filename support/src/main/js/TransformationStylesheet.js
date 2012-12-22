@@ -1,14 +1,17 @@
-function TransformationStylesheet() {
+if (!xslt2js) xslt2js = {};
+
+function xslt2js.TransformationStylesheet() {
     this.defaultTemplates = [];
     this.modalTemplates = {};
     this.namedTemplates = {};
-}
+};
 
-TransformationStylesheet.prototype.addNamedTemplate = function(name, transformationFunction) {
+
+xslt2js.TransformationStylesheet.prototype.addNamedTemplate = function(name, transformationFunction) {
     this.namedTemplates[name] = transformationFunction;
-}
+};
 
-TransformationStylesheet.prototype.addTemplate = function(matchFunction, transformationFunction, mode, priority) {
+xslt2js.TransformationStylesheet.prototype.addTemplate = function(matchFunction, transformationFunction, mode, priority) {
     var templates;
     if( mode == null ) {
         templates = this.defaultTemplates;
@@ -31,4 +34,7 @@ TransformationStylesheet.prototype.addTemplate = function(matchFunction, transfo
         }
     );
 }
+
+
+
 

@@ -8,9 +8,9 @@
             <xsl:with-param name="indent" select="$indent"/>
         </xsl:apply-templates>
 
-        <xsl:value-of select="$indent"/><xsl:text>xslt2js.carefulAppendNodes(</xsl:text><xsl:value-of select="$resultNode"/><xsl:text>, </xsl:text>
+        <xsl:value-of select="$indent"/><xsl:value-of select="$resultNode"/><xsl:text>.append(</xsl:text>
         <xsl:apply-templates select="@select" mode="expression2js">
-
+            <xsl:with-param name="expects-value">true</xsl:with-param>
         </xsl:apply-templates>
         <xsl:text>);</xsl:text>
 

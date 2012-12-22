@@ -6,7 +6,7 @@
 
     <xsl:import href="../util.xslt"/>
 
-    <xsl:param name="word-break-chars">+$/*()</xsl:param>
+    <xsl:param name="word-break-chars">+$/*()[]=,</xsl:param>
     <xsl:param name="number-literal-chars">0123456789</xsl:param>
 
     <xsl:template match="@*" mode="expression-text-to-tokens">
@@ -30,6 +30,20 @@
                     <xsl:with-param name="previous-was-value" select="$previous-was-value"/>
                 </xsl:apply-templates>
             </xsl:when>
+            <xsl:when test="$char = '='">
+                <equals index="{$count}"/>
+                <xsl:apply-templates select="." mode="expression-text-to-tokens">
+                    <xsl:with-param name="count" select="$count + 1"/>
+                    <xsl:with-param name="from" select="$from + 1"/>
+                </xsl:apply-templates>
+            </xsl:when>
+            <xsl:when test="$char = ','">
+                <comma index="{$count}"/>
+                <xsl:apply-templates select="." mode="expression-text-to-tokens">
+                    <xsl:with-param name="count" select="$count + 1"/>
+                    <xsl:with-param name="from" select="$from + 1"/>
+                </xsl:apply-templates>
+            </xsl:when>
             <xsl:when test="$char = '+'">
                 <add index="{$count}"/>
                 <xsl:apply-templates select="." mode="expression-text-to-tokens">
@@ -38,11 +52,23 @@
                 </xsl:apply-templates>
             </xsl:when>
             <xsl:when test="$char = '/'">
-                <child index="{$count}"/>
-                <xsl:apply-templates select="." mode="expression-text-to-tokens">
-                    <xsl:with-param name="count" select="$count + 1"/>
-                    <xsl:with-param name="from" select="$from + 1"/>
-                </xsl:apply-templates>
+                <xsl:variable name="next-char" select="substring(., $from+1, 1)"/>
+                <xsl:choose>
+                    <xsl:when test="$next-char = '/'">
+                        <decendant index="{$count}"/>
+                        <xsl:apply-templates select="." mode="expression-text-to-tokens">
+                            <xsl:with-param name="count" select="$count + 1"/>
+                            <xsl:with-param name="from" select="$from + 2"/>
+                        </xsl:apply-templates>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <child index="{$count}"/>
+                        <xsl:apply-templates select="." mode="expression-text-to-tokens">
+                            <xsl:with-param name="count" select="$count + 1"/>
+                            <xsl:with-param name="from" select="$from + 1"/>
+                        </xsl:apply-templates>
+                    </xsl:otherwise>
+                </xsl:choose>
             </xsl:when>
             <xsl:when test="$char = '-'">
                 <subtract index="{$count}"/>
@@ -72,6 +98,20 @@
                     <xsl:with-param name="from" select="$from + 1"/>
                 </xsl:apply-templates>
             </xsl:when>
+            <xsl:when test="$char = '['">
+                <open-square-bracket index="{$count}"/>
+                <xsl:apply-templates select="." mode="expression-text-to-tokens">
+                    <xsl:with-param name="count" select="$count + 1"/>
+                    <xsl:with-param name="from" select="$from + 1"/>
+                </xsl:apply-templates>
+            </xsl:when>
+            <xsl:when test="$char = ']'">
+                <close-square-bracket index="{$count}"/>
+                <xsl:apply-templates select="." mode="expression-text-to-tokens">
+                    <xsl:with-param name="count" select="$count + 1"/>
+                    <xsl:with-param name="from" select="$from + 1"/>
+                </xsl:apply-templates>
+            </xsl:when>
             <xsl:when test="$char = '$'">
                 <xsl:variable name="word">
                     <xsl:apply-templates select="." mode="expression-text-to-tokens-word">
@@ -91,17 +131,18 @@
                     <xsl:with-param name="from" select="exslt:node-set($attribute)/word/@end + 1"/>
                 </xsl:apply-templates>
             </xsl:when>
-            <xsl:when test="$char = '&quot;'">
+            <xsl:when test="$char = '&amp;quot;' or $char = &quot;&apos;&quot;">
                 <xsl:variable name="element">
                     <xsl:apply-templates select="." mode="expression-text-to-tokens-string-literal">
                         <xsl:with-param name="from" select="$from+1"/>
                         <xsl:with-param name="count" select="$count"/>
+                        <xsl:with-param name="end-char" select="$char"/>
                     </xsl:apply-templates>
                 </xsl:variable>
-                <xsl:copy-of select="$element"/>
+                <string-literal index="{$count}"><xsl:value-of select="$element"/></string-literal>
                 <xsl:apply-templates select="." mode="expression-text-to-tokens">
                     <xsl:with-param name="count" select="$count + 1"/>
-                    <xsl:with-param name="from" select="exslt:node-set($element)/@end + 1"/>
+                    <xsl:with-param name="from" select="exslt:node-set($element)/string-literal/@end + 1"/>
                 </xsl:apply-templates>
             </xsl:when>
             <xsl:when test="contains($number-literal-chars, $char)">
@@ -154,6 +195,14 @@
                             <xsl:with-param name="previous-was-value" select="false()"/>
                         </xsl:apply-templates>
                     </xsl:when>
+                    <xsl:when test="exslt:node-set($word)/word = 'true' or exslt:node-set($word)/word = 'false'">
+                        <boolean-literal index="{$count}"><xsl:value-of select="exslt:node-set($word)/word"/></boolean-literal>
+                        <xsl:apply-templates select="." mode="expression-text-to-tokens">
+                            <xsl:with-param name="count" select="$count + 1"/>
+                            <xsl:with-param name="from" select="exslt:node-set($word)/word/@end + 1"/>
+                            <xsl:with-param name="previous-was-value" select="true()"/>
+                        </xsl:apply-templates>
+                    </xsl:when>
                     <xsl:otherwise>
                         <word index="{$count}"><xsl:value-of select="exslt:node-set($word)/word"/></word>
                         <xsl:apply-templates select="." mode="expression-text-to-tokens">
@@ -171,10 +220,14 @@
 
     <xsl:template match="@*" mode="expression-text-to-tokens-string-literal">
         <xsl:param name="from">0</xsl:param>
-        <xsl:param name="to" select="$from"/>
+        <xsl:param name="end-char"/>
 
+        <xsl:variable name="rest" select="substring(.,$from)"/>
+        <xsl:variable name="string" select="substring-before($rest, $end-char)"/>
+
+        <xsl:message>end <xsl:value-of select="$from + string-length($string)"/></xsl:message>
         <!-- look up the end point of the token -->
-        <string-literal begin="{$from}" end="{$to}"><xsl:value-of select="substring(., $from, $from - $to)"/></string-literal>
+        <string-literal begin="{$from}" end="{$from + string-length($string)}"><xsl:value-of select="$string"/></string-literal>
 
     </xsl:template>
 

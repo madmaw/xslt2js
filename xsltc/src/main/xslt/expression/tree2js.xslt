@@ -6,6 +6,59 @@
 
     <xsl:import href="../util.xslt"/>
 
+    <xsl:template match="*" mode="tree-to-javascript">
+        <xsl:param name="expects-value"/>
+        <xsl:param name="value-variable-name"/>
+        <xsl:param name="node-variable-name"/>
+
+        <xsl:choose>
+            <xsl:when test="name(.) = 'child' or name(.) = 'variable' or name(.) = 'word'">
+                <xsl:text>xslt2js.xpath(node, params)</xsl:text>
+                <!-- indicates leading / -->
+                <xsl:if test="count(*) = 1">
+                    <xsl:text>.root()</xsl:text>
+                </xsl:if>
+                <xsl:apply-templates select="." mode="xpath-tree-to-javascript"/>
+                <xsl:choose>
+                    <xsl:when test="$expects-value = 'true'">
+                        <xsl:text>.value()</xsl:text>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:text>.nodes()</xsl:text>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:apply-templates select="." mode="expression-tree-to-javascript"/>
+            </xsl:otherwise>
+        </xsl:choose>
+
+    </xsl:template>
+
+    <xsl:template match="word" mode="xpath-tree-to-javascript">
+        <xsl:text>.children(function(childNode){return childNode.name() == "</xsl:text><xsl:value-of select="text()"/><xsl:text>"</xsl:text>
+        
+        <xsl:if test="count(./*) > 0">
+            <xsl:text> &amp;&amp; (</xsl:text>
+            <xsl:apply-templates select="./*" mode="tree-to-javascript">
+
+            </xsl:apply-templates>
+            <xsl:text>)</xsl:text>
+        </xsl:if>
+        <xsl:text>; })</xsl:text>
+        <!--
+        <xsl:apply-templates select="*" mode="xpath-tree-to-javascript">
+            <xsl:with-param name="skip-child">true</xsl:with-param>
+        </xsl:apply-templates>
+        -->
+    </xsl:template>
+
+    <xsl:template match="equals" mode="expression-tree-to-javascript">
+        <xsl:apply-templates select="." mode="expression-tree-to-javascript-infix">
+            <xsl:with-param name="operator">==</xsl:with-param>
+        </xsl:apply-templates>
+    </xsl:template>
+
     <xsl:template match="multiply" mode="expression-tree-to-javascript">
         <xsl:apply-templates select="." mode="expression-tree-to-javascript-infix">
             <xsl:with-param name="operator">*</xsl:with-param>
@@ -49,16 +102,27 @@
             <xsl:if test="position() > 1">
                 <xsl:text> </xsl:text><xsl:value-of select="$operator"/><xsl:text> </xsl:text>
             </xsl:if>
-            <xsl:apply-templates select="." mode="expression-tree-to-javascript">
-
+            <xsl:apply-templates select="." mode="tree-to-javascript">
+                <xsl:with-param name="expects-value">true</xsl:with-param>
             </xsl:apply-templates>
         </xsl:for-each>
         <xsl:text>)</xsl:text>
 
     </xsl:template>
 
-    <xsl:template match="number-literal" mode="expression-tree-to-javascript">
+    <xsl:template match="number-literal|boolean-literal" mode="expression-tree-to-javascript">
         <xsl:value-of select="."/>
+    </xsl:template>
+
+    <xsl:template match="string-literal" mode="expression-tree-to-javascript">
+        <xsl:text>&quot;</xsl:text><xsl:value-of select="."/><xsl:text>&quot;</xsl:text>
+    </xsl:template>
+
+    <xsl:template match="*" mode="expression-tree-to-javascript">
+        <!-- must be an xpath expression -->
+        <xsl:apply-templates select="." mode="tree-to-javascript">
+            <xsl:with-param name="expects-value">true</xsl:with-param>
+        </xsl:apply-templates>
     </xsl:template>
 
 </xsl:stylesheet>

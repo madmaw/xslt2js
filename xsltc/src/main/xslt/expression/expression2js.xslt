@@ -8,6 +8,7 @@
     <xsl:template match="@*" mode="expression2js">
         <xsl:param name="nodeVariableName">node</xsl:param>
         <xsl:param name="valuesVariableName">values</xsl:param>
+        <xsl:param name="expects-value"/>
 
         <xsl:message>
             EXPRESSION: <xsl:value-of select="."/>
@@ -42,9 +43,10 @@
         </xsl:message>
         <xsl:variable name="treeNodeSet" select="exslt:node-set($treeFragment)"/>
         <xsl:variable name="result">
-            <xsl:apply-templates select="$treeNodeSet" mode="expression-tree-to-javascript">
-                <xsl:with-param name="nodeVariableName" select="$nodeVariableName"/>
-                <xsl:with-param name="valuesVariableName" select="$valuesVariableName"/>
+            <xsl:apply-templates select="$treeNodeSet" mode="tree-to-javascript">
+                <xsl:with-param name="node-variable-name" select="$nodeVariableName"/>
+                <xsl:with-param name="values-variable-name" select="$valuesVariableName"/>
+                <xsl:with-param name="expects-value" select="$expects-value"/>
             </xsl:apply-templates>
         </xsl:variable>
         <xsl:message>

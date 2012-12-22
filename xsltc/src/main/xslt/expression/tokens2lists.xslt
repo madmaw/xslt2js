@@ -30,12 +30,12 @@
 
     </xsl:template>
 
-    <xsl:template match="open-bracket" mode="expression-tokens-to-lists" priority="2">
+    <xsl:template match="open-bracket|open-square-bracket" mode="expression-tokens-to-lists" priority="2">
         <xsl:param name="from" select="@index"/>
 
         <xsl:variable name="index" select="@index"/>
 
-        <list index="{$index}">
+        <list index="{$index}" type="{name()}">
             <!-- reset from -->
             <xsl:apply-templates select="../*[@index = $index + 1]" mode="expression-tokens-to-lists">
 
@@ -44,9 +44,9 @@
 
     </xsl:template>
 
-    <xsl:template match="close-bracket" mode="expression-tokens-to-lists" priority="2">
+    <xsl:template match="close-bracket|close-square-bracket" mode="expression-tokens-to-lists" priority="2">
         <!-- do nothing, we exit the bracketing -->
-        <list-end index="{@index}"/>
+        <list-end index="{@index}" type="{name()}"/>
     </xsl:template>
 
 </xsl:stylesheet>

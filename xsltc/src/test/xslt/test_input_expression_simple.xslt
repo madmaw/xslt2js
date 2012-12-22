@@ -5,4 +5,8 @@
         <xsl:value-of select="false and true or true and false"/>
     </xsl:template>
 
+    <xsl:template match="a[true=true and false=false]">
+        <xsl:value-of select="b['x'='y']/c"/>
+    </xsl:template>
+
 </xsl:stylesheet>
