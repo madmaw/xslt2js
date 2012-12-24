@@ -30,7 +30,7 @@
             <xsl:value-of select="$next-indent"/><xsl:text>priority:</xsl:text><xsl:value-of select="@priority"/><xsl:text>,</xsl:text>
         </xsl:if>
         <xsl:value-of select="$next-indent"/><xsl:text>transformation:function(node, </xsl:text><xsl:value-of select="$resultNode"/><xsl:text>, params){</xsl:text>
-        <xsl:value-of select="$next-next-indent"/><xsl:text>var values = xslt2js.createScope(params);</xsl:text>
+        <xsl:value-of select="$next-next-indent"/><xsl:text>var values = stylesheet.createScope(params);</xsl:text>
         <xsl:apply-templates select="*" mode="xslt2js">
             <xsl:with-param name="indent" select="$next-next-indent"/>
             <xsl:with-param name="resultNode" select="$resultNode"/>

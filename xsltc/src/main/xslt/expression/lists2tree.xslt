@@ -35,11 +35,9 @@
                         </xsl:apply-templates>
                     </xsl:element>
                 </xsl:when>
-                <xsl:when test="name(*[$from-index]) = 'list'">
-                    <xsl:apply-templates select="*[$from-index]" mode="expression-lists-to-tree"/>
-                </xsl:when>
+                <!-- TODO handle types in separate templates -->
                 <xsl:otherwise>
-                    <xsl:copy-of select="*[$from-index]"/>
+                    <xsl:apply-templates select="*[$from-index]" mode="expression-lists-to-tree-value"/>
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:if>
@@ -112,28 +110,39 @@
         <xsl:text>7</xsl:text>
     </xsl:template>
 
-    <xsl:template match="word|variable|string-literal|number-literal|boolean-literal" mode="expression-lists-to-tree-value">
-        <!-- current value should always be a word, constant, or variable -->
-        <!-- look ahead -->
-        <xsl:variable name="index" select="@index"/>
-
-        <xsl:variable name="previousTree">
-            <xsl:copy-of select="."/>
-        </xsl:variable>
-        <xsl:apply-templates select="../*[@index=$index+1]" mode="expression-lists-to-tree-operation">
-            <xsl:with-param name="previous-tree" select="exslt:node-set($previousTree)"/>
-        </xsl:apply-templates>
-
+    <xsl:template match="list" mode="expression-lists-to-tree-value">
+        <xsl:apply-templates select="." mode="expression-lists-to-tree"/>
     </xsl:template>
 
-    <xsl:template match="child" mode="expression-lists-to-tree-operation">
-        <xsl:param name="previous-tree"/>
-        <!-- work out the next tree -->
-        <xsl:variable name="index" select="@index"/>
-        <xsl:variable name="next-tree">
-            <xsl:apply-templates select="../*[@index=$index+1]" mode="expression-lists-to-tree-value"/>
+    <xsl:template match="function" mode="expression-lists-to-tree-value">
+        <!-- split up all the sub-lists into parameters -->
+        <xsl:variable name="name">
+            <xsl:choose>
+                <xsl:when test="contains(@name, ':')">
+                    <xsl:value-of select="substring-after(@name, ':')"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="@name"/>
+                </xsl:otherwise>
+            </xsl:choose>
         </xsl:variable>
+        <function name="{$name}" index="{@index}">
+            <xsl:if test="contains(@name, ':')">
+                <xsl:attribute name="namespace">
+                    <xsl:value-of select="substring-before(@name, ':')"/>
+                </xsl:attribute>
+            </xsl:if>
+            <xsl:for-each select="list">
+                <parameter>
+                    <xsl:apply-templates select="." mode="expression-lists-to-tree"/>
+                </parameter>
+            </xsl:for-each>
+        </function>
+    </xsl:template>
 
+
+    <xsl:template match="*" mode="expression-lists-to-tree-value">
+        <xsl:copy-of select="."/>
     </xsl:template>
 
 </xsl:stylesheet>

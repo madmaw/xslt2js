@@ -16,8 +16,9 @@
         <xsl:if test="$top-level-function-name">
             <xsl:value-of select="$top-level-function-name"/><xsl:text> = </xsl:text>
         </xsl:if>
-        <xsl:text>(function(xslt2js) {</xsl:text>
-        <xsl:value-of select="$next-indent"/><xsl:text>var stylesheet = new xslt.TransformationStylesheet();</xsl:text>
+        <xsl:text>(function(context) {</xsl:text>
+        <xsl:value-of select="$next-indent"/><xsl:text>var stylesheet = new xslt2js.TransformationStylesheet(context);</xsl:text>
+
         <xsl:for-each select="xsl:template">
             <xsl:choose>
                 <xsl:when test="@name">

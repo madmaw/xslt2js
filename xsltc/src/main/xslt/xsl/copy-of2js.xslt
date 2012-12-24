@@ -8,8 +8,8 @@
             <xsl:with-param name="indent" select="$indent"/>
         </xsl:apply-templates>
 
-        <!-- TODO almost certainly should treat as a list -->
-        <xsl:value-of select="$indent"/><xsl:text>xslt2js.carefulAppendNodes(</xsl:text><xsl:value-of select="$resultNode"/><xsl:text>, xslt2js.carefulCloneNodes(</xsl:text>
+        <xsl:value-of select="$indent"/><xsl:value-of select="$resultNode"/><xsl:text>.append(xslt2js.clone(</xsl:text>
+        <xsl:value-of select="$resultNode"/><xsl:text>, </xsl:text>
         <xsl:apply-templates select="@select" mode="expression2js">
 
         </xsl:apply-templates>

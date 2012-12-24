@@ -13,7 +13,7 @@
 
         <xsl:choose>
             <xsl:when test="name(.) = 'child' or name(.) = 'variable' or name(.) = 'word'">
-                <xsl:text>xslt2js.xpath(node, params)</xsl:text>
+                <xsl:text>stylesheet.xpath(node, params)</xsl:text>
                 <!-- indicates leading / -->
                 <xsl:if test="count(*) = 1">
                     <xsl:text>.root()</xsl:text>
@@ -46,6 +46,29 @@
             <xsl:text>)</xsl:text>
         </xsl:if>
         <xsl:text>; })</xsl:text>
+        <!--
+        <xsl:apply-templates select="*" mode="xpath-tree-to-javascript">
+            <xsl:with-param name="skip-child">true</xsl:with-param>
+        </xsl:apply-templates>
+        -->
+    </xsl:template>
+
+    <xsl:template match="function" mode="expression-tree-to-javascript">
+        <xsl:text>stylesheet.callFunction(</xsl:text>
+        <xsl:choose>
+            <xsl:when test="@namespace">
+                <xsl:text>"</xsl:text><xsl:value-of select="@namespace"/><xsl:text>"</xsl:text>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:text>null</xsl:text>
+            </xsl:otherwise>
+        </xsl:choose>
+        <xsl:text>, "</xsl:text><xsl:value-of select="@name"/><xsl:text>"</xsl:text>
+        <xsl:for-each select="parameter">
+            <xsl:text>, </xsl:text>
+            <xsl:apply-templates select="*" mode="expression-tree-to-javascript"/>
+        </xsl:for-each>
+        <xsl:text>)</xsl:text>
         <!--
         <xsl:apply-templates select="*" mode="xpath-tree-to-javascript">
             <xsl:with-param name="skip-child">true</xsl:with-param>
