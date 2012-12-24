@@ -204,7 +204,25 @@
                         </xsl:apply-templates>
                     </xsl:when>
                     <xsl:otherwise>
-                        <word index="{$count}"><xsl:value-of select="exslt:node-set($word)/word"/></word>
+                        <xsl:variable name="full-name" select="exslt:node-set($word)/word/@name"/>
+                        <xsl:variable name="name">
+                            <xsl:choose>
+                                <xsl:when test="contains($full-name, ':')">
+                                    <xsl:value-of select="substring-after($full-name, ':')"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="$full-name"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:variable>
+
+                        <word index="{$count}" name="{$name}">
+                            <xsl:if test="contains($full-name, ':')">
+                                <xsl:attribute name="namespace-prefix">
+                                    <xsl:value-of select="substring-before($full-name, ':')"/>
+                                </xsl:attribute>
+                            </xsl:if>
+                        </word>
                         <xsl:apply-templates select="." mode="expression-text-to-tokens">
                             <xsl:with-param name="count" select="$count + 1"/>
                             <xsl:with-param name="from" select="exslt:node-set($word)/word/@end + 1"/>
@@ -225,7 +243,6 @@
         <xsl:variable name="rest" select="substring(.,$from)"/>
         <xsl:variable name="string" select="substring-before($rest, $end-char)"/>
 
-        <xsl:message>end <xsl:value-of select="$from + string-length($string)"/></xsl:message>
         <!-- look up the end point of the token -->
         <string-literal begin="{$from}" end="{$from + string-length($string)}"><xsl:value-of select="$string"/></string-literal>
 
@@ -274,7 +291,7 @@
         <xsl:message><xsl:value-of select="$from"/>..<xsl:value-of select="$to"/> char '<xsl:value-of select="$char"/>' finished <xsl:value-of select="$finishIndex"/></xsl:message>
         <xsl:choose>
             <xsl:when test="string-length(normalize-space($finishIndex)) > 0">
-                <word begin="{$from}" end="{$finishIndex}"><xsl:value-of select="substring(.,$from,$finishIndex+1-$from)"/></word>
+                <word begin="{$from}" end="{$finishIndex}" name="{substring(.,$from,$finishIndex+1-$from)}"/>
             </xsl:when>
             <xsl:otherwise>
                 <xsl:apply-templates select="." mode="expression-text-to-tokens-word">

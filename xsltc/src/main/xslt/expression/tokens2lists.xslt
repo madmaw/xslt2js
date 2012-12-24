@@ -44,7 +44,13 @@
 
                     </xsl:apply-templates>
                 </xsl:variable>
-                <function index="{$index}" name="{.}">
+                <function>
+                    <xsl:for-each select="@*">
+                        <xsl:attribute name="{name(.)}">
+                            <xsl:value-of select="."/>
+                        </xsl:attribute>
+                    </xsl:for-each>
+
                     <xsl:copy-of select="$function-parameter-lists"/>
                 </function>
                 <!-- continue on from the end of the lists -->

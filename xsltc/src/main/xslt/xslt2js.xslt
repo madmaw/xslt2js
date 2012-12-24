@@ -41,13 +41,13 @@
 
                 <!-- var child = copy -->
                 <xsl:value-of select="$indent"/>
-                <xsl:text>var </xsl:text><xsl:value-of select="$childNode"/><xsl:text> = xslt2js.createNode("</xsl:text><xsl:value-of select="name(.)"/><xsl:text>");</xsl:text>
+                <xsl:text>var </xsl:text><xsl:value-of select="$childNode"/><xsl:text> = </xsl:text><xsl:value-of select="$resultNode"/><xsl:text>.createNode("</xsl:text><xsl:value-of select="name(.)"/><xsl:text>");</xsl:text>
 
                 <!-- TODO add in the attributes -->
                 <xsl:for-each select="@*">
                     <xsl:value-of select="$indent"/>
-                    <xsl:text>xslt2js.setAttribute(</xsl:text>
-                    <xsl:value-of select="$childNode"/><xsl:text>, "</xsl:text><xsl:value-of select="name(.)"/>
+                    <xsl:value-of select="$childNode"/><xsl:text>.setAttribute(</xsl:text>
+                    <xsl:text>"</xsl:text><xsl:value-of select="name(.)"/>
                     <xsl:text>", </xsl:text>
                     <xsl:choose>
                         <!-- TODO test for this better -->
@@ -69,7 +69,7 @@
 
                 <!-- result.append(child) -->
                 <xsl:value-of select="$indent"/>
-                <xsl:text>xslt2js.appendNode(</xsl:text><xsl:value-of select="$resultNode"/><xsl:text>, </xsl:text><xsl:value-of select="$childNode"/><xsl:text>);</xsl:text>
+                <xsl:value-of select="$resultNode"/><xsl:text>.appendNode(</xsl:text><xsl:text></xsl:text><xsl:value-of select="$childNode"/><xsl:text>);</xsl:text>
 
                 <!-- add in the children -->
                 <xsl:apply-templates select="*" mode="xslt2js">

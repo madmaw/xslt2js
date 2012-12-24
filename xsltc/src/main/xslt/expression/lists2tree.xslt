@@ -21,9 +21,11 @@
                     <xsl:variable name="lowest-precedence-element" select="*[position() = $lowest-precedence-index]"/>
 
                     <xsl:element name="{name($lowest-precedence-element)}">
-                        <xsl:attribute name="index">
-                            <xsl:value-of select="$lowest-precedence-element/@index"/>
-                        </xsl:attribute>
+                        <xsl:for-each select="$lowest-precedence-element/@*">
+                            <xsl:attribute name="{name(.)}">
+                                <xsl:value-of select="."/>
+                            </xsl:attribute>
+                        </xsl:for-each>
                         <xsl:value-of select="$lowest-precedence-element/text()"/>
                         <xsl:apply-templates select="." mode="expression-lists-to-tree">
                             <xsl:with-param name="from-index" select="$from-index"/>
@@ -116,6 +118,18 @@
 
     <xsl:template match="function" mode="expression-lists-to-tree-value">
         <!-- split up all the sub-lists into parameters -->
+        <function>
+            <xsl:for-each select="@*">
+                <xsl:attribute name="{name(.)}">
+                    <xsl:value-of select="."/>
+                </xsl:attribute>
+            </xsl:for-each>
+            <xsl:apply-templates select="list" mode="expression-lists-to-tree"/>
+        </function>
+    </xsl:template>
+
+    <xsl:template match="word" mode="expression-lists-to-tree-value">
+        <!-- split up all the sub-lists into parameters -->
         <xsl:variable name="name">
             <xsl:choose>
                 <xsl:when test="contains(@name, ':')">
@@ -126,20 +140,15 @@
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
-        <function name="{$name}" index="{@index}">
+        <xsl:message>word <xsl:value-of select="$name"/></xsl:message>
+        <word name="{$name}" index="{@index}">
             <xsl:if test="contains(@name, ':')">
                 <xsl:attribute name="namespace">
                     <xsl:value-of select="substring-before(@name, ':')"/>
                 </xsl:attribute>
             </xsl:if>
-            <xsl:for-each select="list">
-                <parameter>
-                    <xsl:apply-templates select="." mode="expression-lists-to-tree"/>
-                </parameter>
-            </xsl:for-each>
-        </function>
+        </word>
     </xsl:template>
-
 
     <xsl:template match="*" mode="expression-lists-to-tree-value">
         <xsl:copy-of select="."/>

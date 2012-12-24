@@ -1,9 +1,10 @@
 if (!xslt2js) xslt2js = {};
 
-function xslt2js.TransformationStylesheet() {
+function xslt2js.TransformationStylesheet(context) {
     this.defaultTemplates = [];
     this.modalTemplates = {};
     this.namedTemplates = {};
+    this.context = context;
 };
 
 

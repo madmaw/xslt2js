@@ -36,7 +36,7 @@
     </xsl:template>
 
     <xsl:template match="word" mode="xpath-tree-to-javascript">
-        <xsl:text>.children(function(childNode){return childNode.name() == "</xsl:text><xsl:value-of select="text()"/><xsl:text>"</xsl:text>
+        <xsl:text>.children(function(childNode){return childNode.name() == "</xsl:text><xsl:value-of select="@name"/><xsl:text>"</xsl:text>
         
         <xsl:if test="count(./*) > 0">
             <xsl:text> &amp;&amp; (</xsl:text>
@@ -64,9 +64,9 @@
             </xsl:otherwise>
         </xsl:choose>
         <xsl:text>, "</xsl:text><xsl:value-of select="@name"/><xsl:text>"</xsl:text>
-        <xsl:for-each select="parameter">
+        <xsl:for-each select="*">
             <xsl:text>, </xsl:text>
-            <xsl:apply-templates select="*" mode="expression-tree-to-javascript"/>
+            <xsl:apply-templates select="." mode="expression-tree-to-javascript"/>
         </xsl:for-each>
         <xsl:text>)</xsl:text>
         <!--
