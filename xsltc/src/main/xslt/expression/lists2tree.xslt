@@ -140,7 +140,6 @@
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
-        <xsl:message>word <xsl:value-of select="$name"/></xsl:message>
         <word name="{$name}" index="{@index}">
             <xsl:if test="contains(@name, ':')">
                 <xsl:attribute name="namespace">

@@ -1,5 +1,7 @@
 <xsl:stylesheet version="1.1" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
+    <xsl:include href="value/value2js.xslt"/>
+
     <xsl:include href="expression/expression2js.xslt"/>
 
     <xsl:include href="util.xslt"/>
@@ -29,7 +31,7 @@
             <xsl:with-param name="indent" select="$indent"/>
         </xsl:apply-templates>
         <xsl:choose>
-            <xsl:when test="starts-with(name(.), 'xsl:')">
+            <xsl:when test="namespace-uri(.) = 'http://www.w3.org/1999/XSL/Transform'">
                 <xsl:message>
                     ERROR: <xsl:value-of select="name(.)"/> is not handled! Skipping!
                 </xsl:message>
@@ -49,21 +51,10 @@
                     <xsl:value-of select="$childNode"/><xsl:text>.setAttribute(</xsl:text>
                     <xsl:text>"</xsl:text><xsl:value-of select="name(.)"/>
                     <xsl:text>", </xsl:text>
-                    <xsl:choose>
-                        <!-- TODO test for this better -->
-                        <xsl:when test="contains(., '{') and contains(., '}')">
-
-                            <!-- TODO extract the expression and apply it (we need to trim off those {} brackets) -->
-                            <xsl:apply-templates select="." mode="expression2js">
-                                <!-- TODO what is the scope of this expression? -->
-                            </xsl:apply-templates>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:text>"</xsl:text>
-                            <xsl:value-of select="string(.)"/>
-                            <xsl:text>"</xsl:text>
-                        </xsl:otherwise>
-                    </xsl:choose>
+                    <xsl:apply-templates select="." mode="value2js">
+                        <xsl:with-param name="nodeVariableName" select="$childNode"/>
+                        <!-- TODO supply the input node -->
+                    </xsl:apply-templates>
                     <xsl:text>);</xsl:text>
                 </xsl:for-each>
 

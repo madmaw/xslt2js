@@ -9,14 +9,29 @@
         <xsl:param name="nodeVariableName">node</xsl:param>
         <xsl:param name="valuesVariableName">values</xsl:param>
         <xsl:param name="expects-value"/>
+        <xsl:call-template name="expression2js">
+            <xsl:with-param name="expression" select="."/>
+            <xsl:with-param name="nodeVariableName" select="$nodeVariableName"/>
+            <xsl:with-param name="valuesVariableName" select="$valuesVariableName"/>
+            <xsl:with-param name="expects-value" select="$expects-value"/>
+        </xsl:call-template>
+    </xsl:template>
+
+    <xsl:template name="expression2js">
+        <xsl:param name="expression"/>
+        <xsl:param name="nodeVariableName"/>
+        <xsl:param name="valuesVariableName"/>
+        <xsl:param name="expects-value"/>
 
         <xsl:message>
-            EXPRESSION: <xsl:value-of select="."/>
+            EXPRESSION: <xsl:value-of select="$expression"/>
         </xsl:message>
 
         <xsl:variable name="tokensFragment">
             <tokens>
-                <xsl:apply-templates select="." mode="expression-text-to-tokens"/>
+                <xsl:call-template name="expression-text-to-tokens">
+                    <xsl:with-param name="expression" select="$expression"/>
+                </xsl:call-template>
             </tokens>
         </xsl:variable>
         <xsl:variable name="tokensNodeSet" select="exslt:node-set($tokensFragment)"/>

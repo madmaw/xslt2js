@@ -12,7 +12,7 @@
         <xsl:param name="node-variable-name"/>
 
         <xsl:choose>
-            <xsl:when test="name(.) = 'child' or name(.) = 'variable' or name(.) = 'word'">
+            <xsl:when test="name(.) = 'child' or name(.) = 'variable' or name(.) = 'word' or name(.) = 'dot'">
                 <xsl:text>stylesheet.xpath(node, params)</xsl:text>
                 <!-- indicates leading / -->
                 <xsl:if test="count(*) = 1">
@@ -33,6 +33,10 @@
             </xsl:otherwise>
         </xsl:choose>
 
+    </xsl:template>
+
+    <xsl:template match="dot" mode="xpath-tree-to-javascript">
+        <!-- do nothing! -->
     </xsl:template>
 
     <xsl:template match="word" mode="xpath-tree-to-javascript">
